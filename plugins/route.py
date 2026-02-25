@@ -3,7 +3,6 @@ import logging
 import re
 from aiohttp import web
 from aiohttp.http_exceptions import BadStatusLine
-from bot import app # Hum app ko import kar rahe hain file fetch karne ke liye
 from utils import get_hash
 
 routes = web.RouteTableDef()
@@ -35,14 +34,13 @@ def get_byte_range(range_header, file_size):
     return ByteModels(start, min(end, file_size - 1), file_size)
 
 async def stream_telegram_file(request, file_id, file_hash, is_download=False):
+    # CIRCULAR IMPORT FIX: Import inside the function
+    from bot import app 
+    from info import BIN_CHANNEL
+
     # Hash check (security ke liye taaki koi randomly id guess na kar sake)
     try:
-        # File info get karne ke liye temporary message ka tarika use karte hain but usse behtar caching hoti hai.
-        # Aapke paas BIN_CHANNEL hai, jahan file upload hoti hai.
-        # file_id yahan actual message_id ya file_id ho sakti hai.
-        # Hum assume kar rahe hain 'stream' callback query id bhej rahi hai jisko pehle BIN channel mein send_cached_media se bheja gaya hai.
         message_id = int(file_id) 
-        from info import BIN_CHANNEL
         
         # message fetch karna 
         message = await app.get_messages(BIN_CHANNEL, message_id)
@@ -91,7 +89,6 @@ async def stream_telegram_file(request, file_id, file_hash, is_download=False):
     await response.prepare(request)
 
     # File stream logic
-    chunk_size = 1024 * 1024 # 1MB chunk size
     current_offset = byte_range.start
     limit = byte_range.end - byte_range.start + 1
 
@@ -100,7 +97,6 @@ async def stream_telegram_file(request, file_id, file_hash, is_download=False):
             await response.write(chunk)
     except Exception as e:
         logger.error(f"Error while streaming: {e}")
-        # Client disconnect ho gaya ya stream ruk gayi toh ignore karein
         pass
 
     return response
