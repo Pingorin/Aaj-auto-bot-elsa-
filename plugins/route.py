@@ -1,6 +1,8 @@
 import math
 import logging
 import re
+import traceback
+import urllib.parse
 from aiohttp import web
 from aiohttp.http_exceptions import BadStatusLine
 from utils import get_hash
@@ -34,52 +36,50 @@ def get_byte_range(range_header, file_size):
     return ByteModels(start, min(end, file_size - 1), file_size)
 
 async def stream_telegram_file(request, file_id, file_hash, is_download=False):
-    # CIRCULAR IMPORT FIX: Import inside the function
     from bot import app 
     from info import BIN_CHANNEL
 
-    # Hash check (security ke liye taaki koi randomly id guess na kar sake)
     try:
         message_id = int(file_id) 
-        
-        # message fetch karna 
         message = await app.get_messages(BIN_CHANNEL, message_id)
+        
         if not message or not message.media:
              return web.Response(status=404, text="File Not Found")
         
-        # media object nikalna (document ya video)
         media = getattr(message, message.media.value)
         file_size = media.file_size
         file_name = getattr(media, 'file_name', 'video.mp4')
-        mime_type = getattr(media, 'mime_type', 'video/mp4')
+        mime_type = getattr(media, 'mime_type', 'video/mp4') or 'application/octet-stream'
 
-        # Hash verify karna
+        # Hash verify
         actual_hash = get_hash(message)
         if actual_hash != file_hash:
             return web.Response(status=403, text="Invalid Hash")
 
     except Exception as e:
         logger.error(f"Error fetching message: {e}")
-        return web.Response(status=404, text="File Not Found or Error Occurred")
+        return web.Response(status=404, text=f"File Not Found or Error Occurred: {e}")
 
-    # Range Headers ke mutabik stream karna
     range_header = request.headers.get('Range')
     byte_range = get_byte_range(range_header, file_size)
 
     if not byte_range:
         return web.Response(status=416, text="Requested Range Not Satisfiable")
 
+    # FIX: Encode file name to prevent HTTP Header crashes
+    encoded_name = urllib.parse.quote(file_name)
+
     headers = {
         "Content-Range": f"bytes {byte_range.start}-{byte_range.end}/{byte_range.length}",
         "Accept-Ranges": "bytes",
         "Content-Length": str(byte_range.end - byte_range.start + 1),
-        "Content-Type": mime_type,
+        "Content-Type": str(mime_type),
     }
 
     if is_download:
-        headers["Content-Disposition"] = f'attachment; filename="{file_name}"'
+        headers["Content-Disposition"] = f'attachment; filename*=UTF-8\'\'{encoded_name}'
     else:
-        headers["Content-Disposition"] = f'inline; filename="{file_name}"'
+        headers["Content-Disposition"] = f'inline; filename*=UTF-8\'\'{encoded_name}'
 
     response = web.StreamResponse(
         status=206 if range_header else 200,
@@ -88,7 +88,6 @@ async def stream_telegram_file(request, file_id, file_hash, is_download=False):
     
     await response.prepare(request)
 
-    # File stream logic
     current_offset = byte_range.start
     limit = byte_range.end - byte_range.start + 1
 
@@ -112,8 +111,10 @@ async def stream_handler(request):
         file_hash = request.query.get("hash")
         return await stream_telegram_file(request, file_id, file_hash, is_download=False)
     except Exception as e:
-        logger.error(f"Stream handler error: {e}")
-        return web.Response(status=500, text="Internal Server Error")
+        err_str = traceback.format_exc()
+        logger.error(f"Stream handler error: {err_str}")
+        # Ab browser screen par exact error print hoga
+        return web.Response(status=500, text=f"Internal Server Error\n\nDetails:\n{err_str}")
 
 @routes.get("/{id}", allow_head=True)
 async def download_handler(request):
@@ -122,5 +123,6 @@ async def download_handler(request):
         file_hash = request.query.get("hash")
         return await stream_telegram_file(request, file_id, file_hash, is_download=True)
     except Exception as e:
-        logger.error(f"Download handler error: {e}")
-        return web.Response(status=500, text="Internal Server Error")
+        err_str = traceback.format_exc()
+        logger.error(f"Download handler error: {err_str}")
+        return web.Response(status=500, text=f"Internal Server Error\n\nDetails:\n{err_str}")
