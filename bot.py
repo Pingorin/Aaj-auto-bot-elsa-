@@ -101,4 +101,7 @@ class Bot(Client):
                 current += 1
 
 app = Bot()
-app.run()
+
+# YAHAN PAR FIX APPLY KIYA GAYA HAI 👇
+if __name__ == "__main__":
+    app.run()
