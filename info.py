@@ -23,23 +23,23 @@ API_HASH = environ.get('API_HASH', 'de2f2e633c293dcb0f73deebc364c306')
 BOT_TOKEN = environ.get('BOT_TOKEN', '6540424193:AAFeNHE8Lo2_WDNGG66OqJaip0qr1fA73_s')
 ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '1030335104').split()]
 USERNAME = environ.get('USERNAME', 'https://t.me/Aks_support01_bot')
-LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1001769642119'))
+LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1003474604893'))
 MOVIE_GROUP_LINK = environ.get('MOVIE_GROUP_LINK', 'https://t.me/masalafiles')
-CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '-1001805305525').split()]
+CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '-1003474604893').split()]
 DATABASE_URI = environ.get('DATABASE_URI', "mongodb+srv://ttttechnicalaks7:cHyZwKd4s5z4OXd4@cluster0.cmxxezj.mongodb.net/?retryWrites=true&w=majority")
 DATABASE_URI2 = environ.get('DATABASE_URI2', "mongodb+srv://ttttechnicalaks7:ttttechnicalaks77@cluster0.wbt3wht.mongodb.net/?retryWrites=true&w=majority")
 DATABASE_NAME = environ.get('DATABASE_NAME', "Aks2")
 COLLECTION_NAME = environ.get('COLLECTION_NAME', 'Aks')
-LOG_API_CHANNEL = int(environ.get('LOG_API_CHANNEL', '-1001925490938'))
+LOG_API_CHANNEL = int(environ.get('LOG_API_CHANNEL', '-1003474604893'))
 QR_CODE = environ.get('QR_CODE', 'https://graph.org/file/901c940e1e0f64e0fe6ac.jpg')
 
 #this vars is for when heroku or koyeb acc get banned, then change this vars as your file to link bot name
-BIN_CHANNEL = int(environ.get('BIN_CHANNEL', '-1001696019751'))
+BIN_CHANNEL = int(environ.get('BIN_CHANNEL', '-1003173929836'))
 URL = environ.get('URL', 'aks-file-to-link-525cd78edc50.herokuapp.com')
 
 # verify system vars
 IS_VERIFY = is_enabled('IS_VERIFY', True)
-LOG_VR_CHANNEL = int(environ.get('LOG_VR_CHANNEL', '-1001508306685'))
+LOG_VR_CHANNEL = int(environ.get('LOG_VR_CHANNEL', '-1003173929836'))
 TUTORIAL = environ.get("TUTORIAL", "https://t.me/how_to_download_channel/17")
 VERIFY_IMG = environ.get("VERIFY_IMG", "https://graph.org/file/1669ab9af68eaa62c3ca4.jpg")
 SHORTENER_API = environ.get("SHORTENER_API", "")
@@ -51,12 +51,12 @@ TWO_VERIFY_GAP = int(environ.get('TWO_VERIFY_GAP', "600"))
 # languages search
 LANGUAGES = ["hindi", "english", "telugu", "tamil", "kannada", "malayalam"]
 
-auth_channel = environ.get('AUTH_CHANNEL', '-1001993223506')
+auth_channel = environ.get('AUTH_CHANNEL', '-1002916715370')
 AUTH_CHANNEL = int(auth_channel) if auth_channel and id_pattern.search(auth_channel) else None
-SUPPORT_GROUP = int(environ.get('SUPPORT_GROUP', '-1001857065489'))
+SUPPORT_GROUP = int(environ.get('SUPPORT_GROUP', '-1003115990357'))
 
 # hastags request features
-request_channel = environ.get('REQUEST_CHANNEL', '-1001798901887')
+request_channel = environ.get('REQUEST_CHANNEL', '-1003148730240')
 REQUEST_CHANNEL = int(request_channel) if request_channel and id_pattern.search(request_channel) else None
 
 # bot settings
