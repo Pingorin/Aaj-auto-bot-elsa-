@@ -5,7 +5,8 @@ import traceback
 import urllib.parse
 from aiohttp import web
 from aiohttp.http_exceptions import BadStatusLine
-from utils import get_hash
+# Hum utils se temp import kar rahe hain bot instance lene ke liye
+from utils import get_hash, temp 
 
 routes = web.RouteTableDef()
 
@@ -36,7 +37,8 @@ def get_byte_range(range_header, file_size):
     return ByteModels(start, min(end, file_size - 1), file_size)
 
 async def stream_telegram_file(request, file_id, file_hash, is_download=False):
-    from bot import app 
+    # RUNNING BOT INSTANCE GET KARNA
+    app = temp.BOT 
     from info import BIN_CHANNEL
 
     try:
@@ -51,7 +53,6 @@ async def stream_telegram_file(request, file_id, file_hash, is_download=False):
         file_name = getattr(media, 'file_name', 'video.mp4')
         mime_type = getattr(media, 'mime_type', 'video/mp4') or 'application/octet-stream'
 
-        # Hash verify
         actual_hash = get_hash(message)
         if actual_hash != file_hash:
             return web.Response(status=403, text="Invalid Hash")
@@ -66,7 +67,6 @@ async def stream_telegram_file(request, file_id, file_hash, is_download=False):
     if not byte_range:
         return web.Response(status=416, text="Requested Range Not Satisfiable")
 
-    # FIX: Encode file name to prevent HTTP Header crashes
     encoded_name = urllib.parse.quote(file_name)
 
     headers = {
@@ -113,7 +113,6 @@ async def stream_handler(request):
     except Exception as e:
         err_str = traceback.format_exc()
         logger.error(f"Stream handler error: {err_str}")
-        # Ab browser screen par exact error print hoga
         return web.Response(status=500, text=f"Internal Server Error\n\nDetails:\n{err_str}")
 
 @routes.get("/{id}", allow_head=True)
